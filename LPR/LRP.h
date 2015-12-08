@@ -1,16 +1,15 @@
 /**
   **************************************************************
-  * @file       LPR.cpp
+  * @file       LRP.h
   * @author     高明飞
   * @version    V0.1
   * @date       2015-12-8
   *
-  * @brief      车牌模式识别程序
+  * @brief      车牌识别核心算法部分
   *
   * @details 
   * @verbatim
-  * 用于进行车牌模式识别，基于OpenCV 3.0
-  * 需要对车牌图像进行预处理，仅能识别数字与字母
+  * 车牌识别核心算法部分
   *
   * 修改记录：
   * 2015-12-8 :
@@ -20,12 +19,24 @@
   ***************************************************************
   */
 
+#pragma once
 
-int main()
+#include <iostream>
+#include <opencv2\opencv.hpp>
+#include <vector>
+
+/**
+  * @brief  此类用于进行车牌识别
+  */
+class LRP
 {
+public:
+  LRP();
 
-  return 0;
-}
+  void binary(cv::Mat & Img);
 
+  void test(cv::Mat Img);
 
+  ~LRP();
+};
 

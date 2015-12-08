@@ -15,15 +15,21 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="LPR.cpp">
+    <ClCompile Include="PlateImg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="PlateImg.cpp">
+    <ClCompile Include="main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="LRP.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PlateImg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="LRP.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
