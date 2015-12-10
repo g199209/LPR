@@ -2,8 +2,8 @@
   **************************************************************
   * @file       LRP.cpp
   * @author     高明飞
-  * @version    V0.1
-  * @date       2015-12-8
+  * @version    V0.2
+  * @date       2015-12-11
   *
   * @brief      车牌识别核心算法部分
   *
@@ -20,6 +20,9 @@
   */
 
 #include "LRP.h"
+#include "PlateImg.h"
+
+//#define PROGRESS
 
 using namespace cv;
 using namespace std;
@@ -31,19 +34,6 @@ LRP::LRP()
 LRP::~LRP()
 {
 }
-
-void LRP::test(Mat Img)
-{
-
-#define PROGRESS
-
-  binary(Img);
-
-  vector<Mat> characters;
-
-  Extract(Img, characters);
-}
-
 
 /**
   * @brief  二值化图像
@@ -76,15 +66,7 @@ void LRP::binary(cv::Mat & Img)
 #endif
 
   // 计算平均灰度值
-  long ThreVal = 0;
-  for (int i = 0; i < Img.rows; i++)
-  {
-    for (int j = 0; j < Img.cols; j++)
-    {
-      ThreVal += Img.at<uchar>(i, j);
-    }
-  }
-  ThreVal = ThreVal / (Img.rows * Img.cols);
+  uchar ThreVal = (uchar)cv::mean(Img).val[0];
 
   // 二值化
   threshold(Img, Img, ThreVal, 255, THRESH_BINARY);
@@ -108,14 +90,14 @@ void LRP::binary(cv::Mat & Img)
   * @brief  递归的提取二值化图像中的每个字符
   *
   * @param  Img: 待处理的二值化图像
-  * @param  vec: 字符图像vector，结果储存于其中
+  * @param  vec: 归一化后的字符图像vector，结果储存于其中
   *
-  * @retval 字符图像vector
+  * @retval None
   *
   * @note
   * 现在这种写法效率不高，而且程序也不简洁……
   */
-void LRP::Extract(cv::Mat & Img, std::vector<cv::Mat> vec)
+void LRP::Extract(cv::Mat & Img, std::vector<cv::Mat> & vec)
 {
   /* 字符边界 */
   int Left = 0, Right = Img.cols, Top = 0, Bottom = Img.rows;
@@ -226,9 +208,22 @@ void LRP::Extract(cv::Mat & Img, std::vector<cv::Mat> vec)
   /* 找到有效字符 */
   if (flag_c == Exit || flag_c == FindEnd)
   {
-    vec.push_back(Img(Range(Top, Bottom), Range(Left, Right)));
+    /* 对字符图片大小进行归一化处理 */
+    Mat tmp;
+    resize(Img(Range(Top, Bottom), Range(Left, Right)), tmp, Size(CharImgWidth, CharImgHeight));
+
+    /* 归一化后，需要重新进行二值化 */
+    // 计算平均灰度值
+    // 计算平均灰度值
+    uchar ThreVal = (uchar)cv::mean(Img).val[0];
+    // 二值化
+    threshold(tmp, tmp, ThreVal, 255, THRESH_BINARY);
+
+    vec.push_back(tmp);
+#ifdef PROGRESS
     imshow("LRP", Img(Range(Top, Bottom), Range(Left, Right)));
     waitKey();
+#endif
   }
 
   /* 当且仅当flag_c == Exit时才可能会有更多的字符 */
@@ -237,5 +232,119 @@ void LRP::Extract(cv::Mat & Img, std::vector<cv::Mat> vec)
   else
     /* 递归。注意：不要裁剪行，仅仅裁剪列 */
     return Extract(Img(Range(0, Img.rows), Range(Right, Img.cols)), vec);
+}
+
+/**
+  * @brief  提取特征向量
+  *
+  * @param  Img: 之前分割好的归一化后的字符图片
+  *
+  * @retval cv::Mat 提取到的特征向量
+  *
+  */
+cv::Mat LRP::Feature(cv::Mat Img)
+{
+  switch (CurrentFeatureMethod)
+  {
+    /* SVD */
+  case FeatureSVD:
+    Mat w;
+    Img.convertTo(Img, CV_32F, 1 / 255.0);
+    SVD::compute(Img, w);
+    return w;
+  }
+}
+
+/**
+  * @brief  建立标准样本特征向量
+  *
+  * @param  Path: 标准图片路径
+  * @param  method: 提取特征向量使用的方法
+  *   @arg  FeatureSVD: SVD
+  *
+  * @retval None
+  */
+void LRP::Standard(std::string Path, FeatureMethod method)
+{
+  CurrentFeatureMethod = method;
+  PlateImg ImgProvider = PlateImg(Path);
+
+  Mat img, feature;
+  vector<Mat> characters;
+
+  for (int i = 0; i < ImgProvider.ImgNum; i++)
+  {
+    cout << "Computing  " << ImgProvider.GetImgName(i) << "  (" << (i + 1) << " / " << ImgProvider.ImgNum << ")" << endl;
+
+    img = imread(ImgProvider.GetImgPath(i));
+
+    binary(img);
+    characters.clear();
+    Extract(img, characters);
+    feature = Feature(characters[0]);
+
+    StdName.push_back(ImgProvider.GetImgName(i));
+    StdFeature.push_back(feature);
+  }
+}
+
+/**
+  * @brief  识别一个字符
+  *
+  * @param  Img: 之前分割好的归一化后的字符图片
+  *
+  * @retval std::string 识别结果
+  *
+  */
+std::string LRP::IdentifyChar(cv::Mat Img)
+{
+  Mat feature = Feature(Img);
+
+  switch (CurrentIdentifyMethod)
+  {
+    /* 近邻法 */
+  case IdentifyNeighbor:
+    double minDis = norm(feature, StdFeature[0], CV_L2), Dis;
+    int minIndex = 0;
+    for (uint i = 1; i < StdFeature.size(); i++)
+    {
+      Dis = norm(feature, StdFeature[i], CV_L2);
+      if (Dis < minDis)
+      {
+        minDis = Dis;
+        minIndex = i;
+      }
+    }
+    return StdName[minIndex];
+  }
+}
+
+
+/**
+  * @brief  识别一副车牌图像
+  *
+  * @param  Img:    待识别的车牌图像
+  * @param  method: 模式识别使用的方法
+  *   @arg  IdentifyNeighbor: 近邻法
+  *
+  * @retval std::string
+  */
+std::string LRP::Identify(cv::Mat Img, IdentifyMethod method)
+{
+  CurrentIdentifyMethod = method;
+
+  vector<Mat> characters;
+  vector<Mat>::iterator IteImg;
+
+  binary(Img);
+  Extract(Img, characters);
+
+  string result = "";
+  for (IteImg = characters.begin(); IteImg != characters.end(); IteImg++)
+  {
+    result += IdentifyChar(*IteImg);
+  }
+
+  return result;
 }
 
