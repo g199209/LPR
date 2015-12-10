@@ -35,8 +35,11 @@ public:
 
   void binary(cv::Mat & Img);
 
+  void LRP::Extract(cv::Mat & Img, std::vector<cv::Mat> vec);
+
   void test(cv::Mat Img);
 
   ~LRP();
+
 };
 

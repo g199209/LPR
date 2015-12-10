@@ -29,6 +29,7 @@ using namespace std;
 /**
   * @brief  车牌图像根目录，最后不要加"\\"
   */
+#define IMG_PATH ("D:\\LPR\\Standard")
 #define IMG_PATH ("D:\\LPR\\Image")
 
 int main()
