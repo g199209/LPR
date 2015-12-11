@@ -39,7 +39,8 @@
   */
 typedef enum
 {
-  FeatureSVD          /*!< SVD方法 */
+  FeatureSVD,         /*!< SVD方法 */
+  FeatureVec,         /*!< 直接拉直为向量 */
 } FeatureMethod;
 
 /**
@@ -47,7 +48,8 @@ typedef enum
   */
 typedef enum
 {
-  IdentifyNeighbor    /*!< 近邻法 */
+  IdentifyNeighbor,     /*!< 近邻法（欧氏距离） */
+
 } IdentifyMethod;
 
 /**

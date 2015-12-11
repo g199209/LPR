@@ -45,24 +45,27 @@ using namespace std;
   */
 int main()
 {
+  Mat img;
+  string result;
   PlateImg ImgProvider = PlateImg(IMG_PATH);
   LRP myLRP = LRP();
 
   namedWindow("LRP", CV_WINDOW_NORMAL);
 
-  myLRP.Standard(STANDARD_PATH, FeatureSVD);
-
-  Mat img;
-  string result;
+  myLRP.Standard(STANDARD_PATH, FeatureVec);
+  
   for (int i = 0; i < ImgProvider.ImgNum; i++)
   {
     img = imread(ImgProvider.GetImgPath(i));
     result = myLRP.Identify(img, IdentifyNeighbor);
-    cout << result << endl;
 
+    cout << "==========================" << endl;
+    cout << "LPR Result: "<< result << endl;
+    cout << "==========================" << endl;
     imshow("LRP", img);
     waitKey();
   }
+
 
   system("pause");
 
