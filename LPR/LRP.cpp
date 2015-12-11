@@ -2,7 +2,7 @@
   **************************************************************
   * @file       LRP.cpp
   * @author     高明飞
-  * @version    V0.2
+  * @version    V0.3
   * @date       2015-12-11
   *
   * @brief      车牌识别核心算法部分
@@ -231,7 +231,7 @@ cv::Mat LRP::Feature(cv::Mat Img)
     {
       for (int j = 0; j < Img.cols; j++)
       {
-        w.at<float>(i*Img.cols + j, 1) = (float)Img.at<uchar>(i, j);
+        w.at<float>(i*Img.cols + j, 0) = (float)Img.at<uchar>(i, j);
       }
     }
     return w;
