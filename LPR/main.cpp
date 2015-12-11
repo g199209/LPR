@@ -29,11 +29,11 @@ using namespace std;
 /**
   * @brief  车牌图像根目录，最后不要加"\\"
   */
-#define IMG_PATH ("D:\\LPR\\Image")
+#define IMG_PATH (".\\Image")
 /**
   * @brief  标准字符图像根目录，最后不要加"\\"
   */
-#define STANDARD_PATH ("D:\\LPR\\Standard")
+#define STANDARD_PATH (".\\Standard")
 
 
 /**
