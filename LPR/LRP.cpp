@@ -22,8 +22,6 @@
 #include "LRP.h"
 #include "PlateImg.h"
 
-//#define PROGRESS
-
 using namespace cv;
 using namespace std;
 
@@ -44,46 +42,24 @@ LRP::~LRP()
   */
 void LRP::binary(cv::Mat & Img)
 {
-#ifdef PROGRESS
-  imshow("LRP", Img);
-  waitKey();
-#endif
-
   // 中值滤波
   medianBlur(Img, Img, 7);
-#ifdef PROGRESS
-  imshow("LRP", Img);
-  waitKey();
-#endif
 
   // 提取B通道转为灰度图
   vector<Mat> mv;
   split(Img, mv);
   Img = mv[2];
-#ifdef PROGRESS
-  imshow("LRP", Img);
-  waitKey();
-#endif
 
   // 计算平均灰度值
   uchar ThreVal = (uchar)cv::mean(Img).val[0];
 
   // 二值化
   threshold(Img, Img, ThreVal, 255, THRESH_BINARY);
-#ifdef PROGRESS
-  imshow("LRP", Img);
-  waitKey();
-#endif
 
   // 进行形态学膨胀与腐蚀处理以去掉噪点
   erode(Img, Img, getStructuringElement(MORPH_RECT, Size(3, 3)));
   dilate(Img, Img, getStructuringElement(MORPH_RECT, Size(3, 3)));
   erode(Img, Img, getStructuringElement(MORPH_RECT, Size(2, 2)));
-
-#ifdef PROGRESS
-  imshow("LRP", Img);
-  waitKey();
-#endif
 }
 
 /**
@@ -220,10 +196,6 @@ void LRP::Extract(cv::Mat & Img, std::vector<cv::Mat> & vec)
     threshold(tmp, tmp, ThreVal, 255, THRESH_BINARY);
 
     vec.push_back(tmp);
-#ifdef PROGRESS
-    imshow("LRP", Img(Range(Top, Bottom), Range(Left, Right)));
-    waitKey();
-#endif
   }
 
   /* 当且仅当flag_c == Exit时才可能会有更多的字符 */
@@ -244,13 +216,24 @@ void LRP::Extract(cv::Mat & Img, std::vector<cv::Mat> & vec)
   */
 cv::Mat LRP::Feature(cv::Mat Img)
 {
+  Mat w;
   switch (CurrentFeatureMethod)
   {
     /* SVD */
   case FeatureSVD:
-    Mat w;
     Img.convertTo(Img, CV_32F, 1 / 255.0);
     SVD::compute(Img, w);
+    return w;
+
+  case FeatureVec:
+    w = Mat(Img.rows * Img.cols, 1, CV_32F);
+    for (int i = 0; i < Img.rows; i++)
+    {
+      for (int j = 0; j < Img.cols; j++)
+      {
+        w.at<float>(i*Img.cols + j, 1) = (float)Img.at<uchar>(i, j);
+      }
+    }
     return w;
   }
 }
@@ -261,6 +244,7 @@ cv::Mat LRP::Feature(cv::Mat Img)
   * @param  Path: 标准图片路径
   * @param  method: 提取特征向量使用的方法
   *   @arg  FeatureSVD: SVD
+  *   @arg  FeatureVec: 直接拉直为向量
   *
   * @retval None
   */
@@ -269,22 +253,25 @@ void LRP::Standard(std::string Path, FeatureMethod method)
   CurrentFeatureMethod = method;
   PlateImg ImgProvider = PlateImg(Path);
 
-  Mat img, feature;
   vector<Mat> characters;
 
+  #pragma omp parallel for 
   for (int i = 0; i < ImgProvider.ImgNum; i++)
   {
-    cout << "Computing  " << ImgProvider.GetImgName(i) << "  (" << (i + 1) << " / " << ImgProvider.ImgNum << ")" << endl;
+    cout << "Computing  " << ImgProvider.GetImgName(i) << endl;
 
-    img = imread(ImgProvider.GetImgPath(i));
+    Mat img = imread(ImgProvider.GetImgPath(i));
 
     binary(img);
     characters.clear();
     Extract(img, characters);
-    feature = Feature(characters[0]);
+    Mat feature = Feature(characters[0]);
 
-    StdName.push_back(ImgProvider.GetImgName(i));
-    StdFeature.push_back(feature);
+    #pragma omp critical
+    {
+      StdName.push_back(ImgProvider.GetImgName(i));
+      StdFeature.push_back(feature);
+    }
   }
 }
 
@@ -302,20 +289,39 @@ std::string LRP::IdentifyChar(cv::Mat Img)
 
   switch (CurrentIdentifyMethod)
   {
-    /* 近邻法 */
+    /* 近邻法（欧氏距离） */
   case IdentifyNeighbor:
     double minDis = norm(feature, StdFeature[0], CV_L2), Dis;
     int minIndex = 0;
+
+    #ifdef _DEBUG
+    cout << "--------------------------" << endl;
+    cout << StdName[minIndex] << " : " << minDis << endl;
+    #endif
+
     for (uint i = 1; i < StdFeature.size(); i++)
     {
       Dis = norm(feature, StdFeature[i], CV_L2);
+
       if (Dis < minDis)
       {
         minDis = Dis;
         minIndex = i;
       }
+
+      #ifdef _DEBUG
+      cout << StdName[i] << " : " << Dis << endl;
+      #endif
     }
+
+    #ifdef _DEBUG
+    cout << "Neighbor : "<< StdName[minIndex] << " = " << minDis << endl;
+    cout << "--------------------------" << endl;
+    imshow("LRP", Img);
+    waitKey();
+    #endif
     return StdName[minIndex];
+
   }
 }
 
@@ -325,7 +331,7 @@ std::string LRP::IdentifyChar(cv::Mat Img)
   *
   * @param  Img:    待识别的车牌图像
   * @param  method: 模式识别使用的方法
-  *   @arg  IdentifyNeighbor: 近邻法
+  *   @arg  IdentifyNeighbor:     近邻法（欧氏距离）
   *
   * @retval std::string
   */
@@ -336,7 +342,18 @@ std::string LRP::Identify(cv::Mat Img, IdentifyMethod method)
   vector<Mat> characters;
   vector<Mat>::iterator IteImg;
 
+  #ifdef _DEBUG
+  imshow("LRP", Img);
+  waitKey();
+  #endif
+
   binary(Img);
+
+  #ifdef _DEBUG
+  imshow("LRP", Img);
+  waitKey();
+  #endif
+
   Extract(Img, characters);
 
   string result = "";
