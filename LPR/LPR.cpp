@@ -45,10 +45,10 @@ void LPR::binary(cv::Mat & Img)
   // 中值滤波
   medianBlur(Img, Img, 7);
 
-  // 提取G通道转为灰度图
+  // 提取B通道转为灰度图
   vector<Mat> mv;
   split(Img, mv);
-  Img = mv[1];
+  Img = mv[2];
 
   // 计算平均灰度值
   uchar ThreVal = (uchar)cv::mean(Img).val[0];
