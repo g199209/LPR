@@ -2,8 +2,8 @@
   **************************************************************
   * @file       main.cpp
   * @author     高明飞
-  * @version    V0.3
-  * @date       2015-12-11
+  * @version    V0.3.1
+  * @date       2016-01-04
   *
   * @brief      车牌模式识别主程序入口
   *
@@ -48,16 +48,16 @@ int main()
   Mat img;
   string result;
   PlateImg ImgProvider = PlateImg(IMG_PATH);
-  LPR myLRP = LPR();
+  LPR myLPR = LPR();
 
   namedWindow("LPR", CV_WINDOW_NORMAL);
 
-  myLRP.Standard(STANDARD_PATH, FeatureVec);
+  myLPR.Standard(STANDARD_PATH, FeatureVec);
   
   for (int i = 0; i < ImgProvider.ImgNum; i++)
   {
     img = imread(ImgProvider.GetImgPath(i));
-    result = myLRP.Identify(img, IdentifyNeighbor);
+    result = myLPR.Identify(img, IdentifyNeighbor);
 
     cout << "==========================" << endl;
     cout << "LPR Result: "<< result << endl;

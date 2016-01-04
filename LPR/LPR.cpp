@@ -1,9 +1,9 @@
 /**
   **************************************************************
-  * @file       LRP.cpp
+  * @file       LPR.cpp
   * @author     高明飞
-  * @version    V0.3
-  * @date       2015-12-11
+  * @version    V0.3.2
+  * @date       2016-01-04
   *
   * @brief      车牌识别核心算法部分
   *
@@ -45,10 +45,10 @@ void LPR::binary(cv::Mat & Img)
   // 中值滤波
   medianBlur(Img, Img, 7);
 
-  // 提取B通道转为灰度图
+  // 提取G通道转为灰度图
   vector<Mat> mv;
   split(Img, mv);
-  Img = mv[2];
+  Img = mv[1];
 
   // 计算平均灰度值
   uchar ThreVal = (uchar)cv::mean(Img).val[0];
