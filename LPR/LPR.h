@@ -55,10 +55,10 @@ typedef enum
 /**
   * @brief  此类用于进行车牌识别
   */
-class LRP
+class LPR
 {
 public:
-  LRP();
+  LPR();
 
   void Standard(std::string Path, FeatureMethod method);
   std::string Identify(cv::Mat Img, IdentifyMethod method);
@@ -68,7 +68,7 @@ public:
   cv::Mat Feature(cv::Mat Img);
   std::string IdentifyChar(cv::Mat Img);
 
-  ~LRP();
+  ~LPR();
 private:
   std::vector<std::string> StdName;     /*!< 标准样本名称 */
   std::vector<cv::Mat> StdFeature;      /*!< 标准样本特征向量 */

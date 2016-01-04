@@ -141,12 +141,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="LRP.cpp" />
+    <ClCompile Include="LPR.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PlateImg.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="LRP.h" />
+    <ClInclude Include="LPR.h" />
     <ClInclude Include="PlateImg.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

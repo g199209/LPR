@@ -20,7 +20,7 @@
   */
 
 #include "PlateImg.h"
-#include "LRP.h"
+#include "LPR.h"
 #include <windows.h>
 
 using namespace cv;
@@ -48,9 +48,9 @@ int main()
   Mat img;
   string result;
   PlateImg ImgProvider = PlateImg(IMG_PATH);
-  LRP myLRP = LRP();
+  LPR myLRP = LPR();
 
-  namedWindow("LRP", CV_WINDOW_NORMAL);
+  namedWindow("LPR", CV_WINDOW_NORMAL);
 
   myLRP.Standard(STANDARD_PATH, FeatureVec);
   
@@ -62,7 +62,7 @@ int main()
     cout << "==========================" << endl;
     cout << "LPR Result: "<< result << endl;
     cout << "==========================" << endl;
-    imshow("LRP", img);
+    imshow("LPR", img);
     waitKey();
   }
 

@@ -21,7 +21,7 @@
     <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="LRP.cpp">
+    <ClCompile Include="LPR.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,7 +29,7 @@
     <ClInclude Include="PlateImg.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="LRP.h">
+    <ClInclude Include="LPR.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
