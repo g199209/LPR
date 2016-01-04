@@ -19,17 +19,17 @@
   ***************************************************************
   */
 
-#include "LRP.h"
+#include "LPR.h"
 #include "PlateImg.h"
 
 using namespace cv;
 using namespace std;
 
-LRP::LRP()
+LPR::LPR()
 {
 }
 
-LRP::~LRP()
+LPR::~LPR()
 {
 }
 
@@ -40,7 +40,7 @@ LRP::~LRP()
   *
   * @retval None
   */
-void LRP::binary(cv::Mat & Img)
+void LPR::binary(cv::Mat & Img)
 {
   // 中值滤波
   medianBlur(Img, Img, 7);
@@ -73,7 +73,7 @@ void LRP::binary(cv::Mat & Img)
   * @note
   * 现在这种写法效率不高，而且程序也不简洁……
   */
-void LRP::Extract(cv::Mat & Img, std::vector<cv::Mat> & vec)
+void LPR::Extract(cv::Mat & Img, std::vector<cv::Mat> & vec)
 {
   /* 字符边界 */
   int Left = 0, Right = Img.cols, Top = 0, Bottom = Img.rows;
@@ -214,7 +214,7 @@ void LRP::Extract(cv::Mat & Img, std::vector<cv::Mat> & vec)
   * @retval cv::Mat 提取到的特征向量
   *
   */
-cv::Mat LRP::Feature(cv::Mat Img)
+cv::Mat LPR::Feature(cv::Mat Img)
 {
   Mat w;
   switch (CurrentFeatureMethod)
@@ -248,7 +248,7 @@ cv::Mat LRP::Feature(cv::Mat Img)
   *
   * @retval None
   */
-void LRP::Standard(std::string Path, FeatureMethod method)
+void LPR::Standard(std::string Path, FeatureMethod method)
 {
   CurrentFeatureMethod = method;
   PlateImg ImgProvider = PlateImg(Path);
@@ -283,7 +283,7 @@ void LRP::Standard(std::string Path, FeatureMethod method)
   * @retval std::string 识别结果
   *
   */
-std::string LRP::IdentifyChar(cv::Mat Img)
+std::string LPR::IdentifyChar(cv::Mat Img)
 {
   Mat feature = Feature(Img);
 
@@ -317,7 +317,7 @@ std::string LRP::IdentifyChar(cv::Mat Img)
     #ifdef _DEBUG
     cout << "Neighbor : "<< StdName[minIndex] << " = " << minDis << endl;
     cout << "--------------------------" << endl;
-    imshow("LRP", Img);
+    imshow("LPR", Img);
     waitKey();
     #endif
     return StdName[minIndex];
@@ -335,7 +335,7 @@ std::string LRP::IdentifyChar(cv::Mat Img)
   *
   * @retval std::string
   */
-std::string LRP::Identify(cv::Mat Img, IdentifyMethod method)
+std::string LPR::Identify(cv::Mat Img, IdentifyMethod method)
 {
   CurrentIdentifyMethod = method;
 
@@ -343,14 +343,14 @@ std::string LRP::Identify(cv::Mat Img, IdentifyMethod method)
   vector<Mat>::iterator IteImg;
 
   #ifdef _DEBUG
-  imshow("LRP", Img);
+  imshow("LPR", Img);
   waitKey();
   #endif
 
   binary(Img);
 
   #ifdef _DEBUG
-  imshow("LRP", Img);
+  imshow("LPR", Img);
   waitKey();
   #endif
 
